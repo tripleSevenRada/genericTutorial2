@@ -1,10 +1,8 @@
 package com.etnetera.hr.controller;
 
+import com.etnetera.hr.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.etnetera.hr.data.JavaScriptFramework;
 import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
@@ -33,7 +31,13 @@ public class JavaScriptFrameworkController extends EtnRestController {
 	}
 
 	@PostMapping("/add")
-    public void addFramework(@Valid @RequestBody JavaScriptFramework framework){
-	    repository.save(framework);
+    public JavaScriptFramework addFramework(@Valid @RequestBody JavaScriptFramework framework){
+	    return repository.save(framework);
     }
+
+    @GetMapping("/framework/{id}")
+	public JavaScriptFramework getFrameworkById(@PathVariable(value = "id") Long frameworkId){
+		return repository.findById(frameworkId)
+				.orElseThrow(() -> new ResourceNotFoundException("framework","id", frameworkId));
+	}
 }

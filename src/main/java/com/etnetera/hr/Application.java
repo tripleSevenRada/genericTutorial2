@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Application {
 
-	// common settings application.properties
+	// common application.properties
 	// https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class);

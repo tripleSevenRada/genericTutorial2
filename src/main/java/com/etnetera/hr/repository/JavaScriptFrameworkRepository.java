@@ -11,5 +11,6 @@ import com.etnetera.hr.data.JavaScriptFramework;
  *
  */
 public interface JavaScriptFrameworkRepository extends CrudRepository<JavaScriptFramework, Long> {
-
+    // Difference between CrudRepository and JpaRepository interfaces in Spring Data JPA.
+    // https://www.javapedia.net/Spring-Data-Access/900
 }

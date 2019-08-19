@@ -60,7 +60,9 @@ public class JavaScriptFrameworkTests {
 	@Test
 	public void frameworksTest() throws Exception {
 		prepareData();
-		mockMvc.perform(get("/frameworks")).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+		mockMvc.perform(get("/frameworks"))
+				.andExpect(status().isOk())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
 				.andExpect(jsonPath("$", hasSize(2)))
 				.andExpect(jsonPath("$[0].id", is(1)))
 				.andExpect(jsonPath("$[0].name", is("ReactJS")))
@@ -75,8 +77,8 @@ public class JavaScriptFrameworkTests {
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("$.errors", hasSize(1)))
 				.andExpect(jsonPath("$.errors[0].field", is("name")))
-				.andExpect(jsonPath("$.errors[0].message", is("NotBlank")));// "  " podle me neni validni jmeno pro JSframework, proto jsem nenechal @NotEmpty
-		
+				.andExpect(jsonPath("$.errors[0].message", is("NotBlank")));
+				// @NotBlank misto @NotEmpty
 		framework.setName("ThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirty");
 		mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
 			.andExpect(status().isBadRequest())
