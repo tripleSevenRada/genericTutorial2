@@ -3,6 +3,7 @@ package com.etnetera.hr.controller;
 import com.etnetera.hr.exception.ResourceNotFoundException;
 import com.etnetera.hr.rest.Errors;
 import com.etnetera.hr.rest.ValidationError;
+import com.etnetera.hr.rest.ValidationErrorAlphabeticalComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -26,9 +27,17 @@ public abstract class EtnRestController {
     public ResponseEntity<Errors> handleValidationException(MethodArgumentNotValidException ex) {
         BindingResult result = ex.getBindingResult();
         Errors errors = new Errors();
-        List<ValidationError> errorList = result.getFieldErrors().stream().map(e -> {
-            return new ValidationError(e.getField(), e.getCode());
-        }).collect(Collectors.toList());
+        List<ValidationError> errorList = result
+                .getFieldErrors()
+                .stream()
+                .map(e -> {
+                    return new ValidationError(e.getField(), e.getCode());
+                })
+                .sorted(new ValidationErrorAlphabeticalComparator())
+                .collect(Collectors.toList());
+        // Edge case: Name pro framework "   vice nez x whitespace   " je porusenim dvou
+        // validacnich constraints. Validacni mechanismus negarantuje stejne poradi
+        // odpovidajicich FieldError's v BindingResult. Proto custom sort, hlavne kvuli testum.
         errors.setErrors(errorList);
         return ResponseEntity.badRequest().body(errors);
     }

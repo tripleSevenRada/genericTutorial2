@@ -1,5 +1,7 @@
 package com.etnetera.hr.data;
 
+import org.hibernate.search.annotations.Indexed;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,6 +17,7 @@ import javax.validation.constraints.Size;
  * @author Etnetera
  *
  */
+@Indexed
 @Entity
 public class JavaScriptFramework {
 
@@ -22,9 +25,11 @@ public class JavaScriptFramework {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	@Column(nullable = false, length = 30)
+	//TODO
+	private static final int JAVASCRIPT_FRAMEWORK_NAME_MAX_LENGTH = 30;
+	@Column(nullable = false, length = JAVASCRIPT_FRAMEWORK_NAME_MAX_LENGTH)
 	@NotBlank(message = "NotBlank")
-	@Size(max = 30, message = "Size")
+	@Size(max = JAVASCRIPT_FRAMEWORK_NAME_MAX_LENGTH, message = "Size")
 	private String name;
 
 	public JavaScriptFramework() {

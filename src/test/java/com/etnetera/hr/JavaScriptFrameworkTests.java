@@ -2,6 +2,8 @@ package com.etnetera.hr;
 
 import com.etnetera.hr.data.JavaScriptFramework;
 import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
+import com.etnetera.hr.rest.ValidationError;
+import com.etnetera.hr.rest.ValidationErrorAlphabeticalComparator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.AfterClass;
@@ -20,12 +22,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -57,6 +60,9 @@ public class JavaScriptFrameworkTests {
         frameworks.add(new JavaScriptFramework("ReactJS"));
         frameworks.add(new JavaScriptFramework("Vue.js"));
         frameworks.add(new JavaScriptFramework("frameworkXY"));
+        frameworks.add(new JavaScriptFramework("frameworkXZ"));
+        frameworks.add(new JavaScriptFramework("AframeworkXZ"));
+        frameworks.add(new JavaScriptFramework("BframeworkXZ"));
         for (JavaScriptFramework f : frameworks) {
             mockMvc.perform(post("/add")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -65,7 +71,36 @@ public class JavaScriptFrameworkTests {
     }
 
     @Test
-    public void A_frameworksTest() throws Exception {
+    public void A_testValidationErrorAlphabeticalComparator() {
+
+        // Proc to cele?
+        // Edge case: Name pro framework "   vice nez x whitespace   " je porusenim dvou
+        // validacnich constraints. Validacni mechanismus negarantuje stejne poradi
+        // odpovidajicich FieldError's v BindingResult. Proto custom sort, hlavne kvuli testum.
+
+        Map<Integer, ValidationError> expectedOrder = new HashMap<Integer, ValidationError>() {
+            {
+                put(0, new ValidationError("", ""));
+                put(1, new ValidationError(null, "value"));
+                put(2, new ValidationError("value", null));
+                put(3, new ValidationError(null, null));
+                put(4, new ValidationError("A", "B"));
+                put(5, new ValidationError("A", "C"));
+                put(6, new ValidationError("B", "D"));
+                put(7, new ValidationError("B", "E"));
+            }
+        };
+
+        List<ValidationError> veList = new ArrayList<>();
+        for (int i = 7; i >= 4; i--) veList.add(expectedOrder.get(i)); // reasonable reversed
+        for (int i = 0; i < 4; i++) veList.add(expectedOrder.get(i)); // edge cases not reversed
+        veList.sort(new ValidationErrorAlphabeticalComparator());
+        veList.forEach(it -> LOG.debug(it != null ? it.toString() : "null"));
+        for (int i = 0; i < 8; i++) assert (veList.get(i) == expectedOrder.get(i));
+    }
+
+    @Test
+    public void B_frameworksTest() throws Exception {
         prepareData();
         mockMvc.perform(get("/frameworks"))
                 .andExpect(status().isOk())
@@ -78,7 +113,7 @@ public class JavaScriptFrameworkTests {
     }
 
     @Test
-    public void B_addFrameworkInvalid() throws JsonProcessingException, Exception {
+    public void C_addFrameworkInvalid() throws JsonProcessingException, Exception {
         JavaScriptFramework framework = new JavaScriptFramework();
         // V JavascriptFramework.java je @NotBlank name,
         // "      " neni myslim validni jmeno pro framework jak by naznacovalo zadani.
@@ -92,9 +127,10 @@ public class JavaScriptFrameworkTests {
         };
 
         for (String blankName : allBlankNames) {
-            // Je mutability nutna? To by byla moje otazka tady.
+            // napadaji me obecnejsi otazky v souvislosti s mutability ve Springu
             framework.setName(blankName);
-            mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
+            mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsBytes(framework)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", hasSize(1)))
                     .andExpect(jsonPath("$.errors[0].field", is("name")))
@@ -102,9 +138,11 @@ public class JavaScriptFrameworkTests {
         }
 
         framework.setName("                                  ");// > 30
-        mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
+        mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(framework)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", hasSize(2)))
+                // ValidationErrorAlphabeticalComparator pro stejne poradi u errors tuples.
                 .andExpect(jsonPath("$.errors[0].field", is("name")))
                 .andExpect(jsonPath("$.errors[0].message", is("NotBlank")))
                 .andExpect(jsonPath("$.errors[1].field", is("name")))
@@ -112,7 +150,8 @@ public class JavaScriptFrameworkTests {
                 .andReturn();
 
         framework.setName("ThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirty");
-        mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsBytes(framework)))
+        mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(framework)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", hasSize(1)))
                 .andExpect(jsonPath("$.errors[0].field", is("name")))
@@ -121,8 +160,9 @@ public class JavaScriptFrameworkTests {
 
     //getFrameworkById
     @Test
-    public void C_getFrameworkByIdTest() throws Exception {
-        MvcResult result = mockMvc.perform(get("/framework/1").contentType(MediaType.APPLICATION_JSON))
+    public void D_getFrameworkByIdTest() throws Exception {
+        MvcResult result = mockMvc.perform(get("/framework/1")
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.name", is("ReactJS")))
@@ -131,9 +171,73 @@ public class JavaScriptFrameworkTests {
     }
 
     @Test
-    public void D_getFrameworkByNonExistingIdTest() throws Exception {
+    public void E_getFrameworkByNonExistingIdTest() throws Exception {
         mockMvc.perform(get("/framework/1000").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(404));
+        // custom vyjimka zachycena handlerem v EtnRestController
+        // loguje do spring.log
+
+        // 2019-08-21 12:30:21.452  WARN 1243 --- [main] c.e.hr.controller.EtnRestController
+        // : JavaScriptFramework not found with id : '1000'
+    }
+
+    //updateFramework
+    @Test
+    public void F_updateFrameworkTest() throws Exception {
+        JavaScriptFramework updated = new JavaScriptFramework("ReactJSupdated");
+        mockMvc.perform(put("/update/1").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(updated)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("ReactJSupdated")));
+        // direct retrieval sanity check
+        mockMvc.perform(get("/framework/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.name", is("ReactJSupdated")));
+    }
+
+    @Test
+    public void G_updateFrameworkInvalid() throws Exception {
+        JavaScriptFramework updated = new JavaScriptFramework(" ");// blank name
+        mockMvc.perform(put("/update/1").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(updated)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].field", is("name")))
+                .andExpect(jsonPath("$.errors[0].message", is("NotBlank")));
+    }
+
+    @Test
+    public void H_updateFrameworkByNonExistingIdTest() throws Exception {
+        JavaScriptFramework updated = new JavaScriptFramework("nonExistingId");
+        mockMvc.perform(put("/update/999").contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsBytes(updated)))
+                .andExpect(status().is(404));
+        // custom vyjimka zachycena handlerem v EtnRestController
+        // loguje do spring.log
+
+        // 2019-08-21 13:35:26.662  WARN 9933 --- [main] c.e.hr.controller.EtnRestController
+        // : JavaScriptFramework not found with id : '999'
+    }
+
+    @Test
+    public void I_deleteFrameworkTest()throws Exception {
+        // idempotency in REST:
+        // http://restcookbook.com/HTTP%20Methods/idempotency/
+        mockMvc.perform(delete("/delete/1"))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete("/delete/1"))
+                .andExpect(status().is(404));
+    }
+
+    @Test
+    public void J_hibernateSearchTest() throws Exception{
+        MvcResult result = mockMvc.perform(get("search/frameworkXY"))
+                .andExpect(status().isOk())
+                .andReturn();
+        LOG.info("result: " + result.getResponse().getContentAsString());
     }
 
     @AfterClass

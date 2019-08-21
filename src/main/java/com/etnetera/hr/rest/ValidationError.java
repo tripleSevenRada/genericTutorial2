@@ -36,4 +36,11 @@ public class ValidationError {
 		this.message = message;
 	}
 
+	@Override
+	public String toString(){
+		String fieldS = field != null? field: "null";
+		String messageS = message != null? message: "null";
+		return this.getClass().getName() + "| field:" + fieldS + "| message:" + messageS;
+	}
+
 }
