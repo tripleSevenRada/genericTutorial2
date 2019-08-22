@@ -5,6 +5,8 @@ import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,9 @@ import java.util.List;
 
 @Service
 public class HibernateSearchService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(HibernateSearchService.class);
+
     @Autowired
     private final EntityManager entityManager;
 
@@ -30,39 +35,32 @@ public class HibernateSearchService {
             fullTextEntityManager.createIndexer().startAndWait();
         } catch (InterruptedException e) {
             e.printStackTrace();
+            // TODO
         }
     }
 
     @Transactional
-    public List<JavaScriptFramework> fuzzySearch(String searchTerm,
-                                                 String onField,
-                                                 int editDistance,
-                                                 int prefixLength) {
+    public List<JavaScriptFramework> search(String searchFor,
+                                            String onField) throws NoResultException{
 
         FullTextEntityManager fullTextEntityManager =
                 Search.getFullTextEntityManager(entityManager);
+
         QueryBuilder qb = fullTextEntityManager
                 .getSearchFactory()
                 .buildQueryBuilder()
                 .forEntity(JavaScriptFramework.class)
                 .get();
-        Query luceneQuery = qb.keyword()
-                .fuzzy().withEditDistanceUpTo(editDistance)
-                .withPrefixLength(prefixLength).onFields(onField)
-                .matching(searchTerm)
+
+        Query keywordQuery = qb
+                .keyword()
+                .onField(onField)
+                .matching(searchFor)
                 .createQuery();
 
         javax.persistence.Query jpaQuery = fullTextEntityManager
-                .createFullTextQuery(luceneQuery, JavaScriptFramework.class);
+                .createFullTextQuery(keywordQuery, JavaScriptFramework.class);
 
-        // execute search
-
-        List<JavaScriptFramework> frameworks = null;
-        try {
-            frameworks = jpaQuery.getResultList();
-        } catch (NoResultException nre) {
-            // do nothing
-        }
-        return frameworks;
+        return jpaQuery.getResultList();
     }
 }

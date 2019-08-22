@@ -1,11 +1,13 @@
 package com.etnetera.hr.controller;
 
+import com.etnetera.hr.exception.HibernateSearchException;
 import com.etnetera.hr.exception.ResourceNotFoundException;
 import com.etnetera.hr.rest.Errors;
 import com.etnetera.hr.rest.ValidationError;
 import com.etnetera.hr.rest.ValidationErrorAlphabeticalComparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -46,5 +48,11 @@ public abstract class EtnRestController {
     public ResponseEntity handleResourceNotFoundException(ResourceNotFoundException ex) {
         LOG.warn(ex.getMessage());
         return ResponseEntity.notFound().build();
+    }
+
+    @ExceptionHandler(HibernateSearchException.class)
+    public ResponseEntity handleHibernateSearchException(HibernateSearchException ex){
+        LOG.error(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }

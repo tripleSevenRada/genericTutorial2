@@ -1,6 +1,7 @@
 package com.etnetera.hr.controller;
 
 import com.etnetera.hr.data.JavaScriptFramework;
+import com.etnetera.hr.exception.HibernateSearchException;
 import com.etnetera.hr.exception.ResourceNotFoundException;
 import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
 import com.etnetera.hr.service.HibernateSearchService;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.NoResultException;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -65,20 +67,25 @@ public class JavaScriptFrameworkController extends EtnRestController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("search/{name}")
+    @GetMapping("search/{onField}/{searchFor}")
     public List<JavaScriptFramework> searchByName(
-            @PathVariable(value = "name") String name
-    ) {
+            @PathVariable(value = "onField") String onField,
+            @PathVariable(value = "searchFor") String searchFor) {
+
         List<JavaScriptFramework> searchResults = null;
         try {
-            searchResults = searchService.fuzzySearch(name, "name", 1, 1);
+            searchResults = searchService.search(searchFor, onField);
+        } catch (NoResultException nre){
+            throw new ResourceNotFoundException("JavaScriptFramework", onField, searchFor);
         } catch (Exception ex) {
-            // here you should handle unexpected errors
-            // ...
-            // throw ex;
+            throw new HibernateSearchException(ex.getMessage());
         }
+        if(searchResults == null || searchResults.isEmpty())
+            throw new ResourceNotFoundException("JavaScriptFramework", onField, searchFor);
         return searchResults;
     }
+
+    //TODO fuzzy search e.t.c
 
     @GetMapping("/testLogLevel")
     public String testLogLevel() {

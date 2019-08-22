@@ -5,6 +5,7 @@ import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
 import com.etnetera.hr.rest.ValidationError;
 import com.etnetera.hr.rest.ValidationErrorAlphabeticalComparator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.AfterClass;
 import org.junit.FixMethodOrder;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -28,6 +30,7 @@ import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -60,8 +63,10 @@ public class JavaScriptFrameworkTests {
         frameworks.add(new JavaScriptFramework("ReactJS"));
         frameworks.add(new JavaScriptFramework("Vue.js"));
         frameworks.add(new JavaScriptFramework("frameworkXY"));
+        frameworks.add(new JavaScriptFramework("frameworkXY"));
+        frameworks.add(new JavaScriptFramework("frameworkXY"));
         frameworks.add(new JavaScriptFramework("frameworkXZ"));
-        frameworks.add(new JavaScriptFramework("AframeworkXZ"));
+        frameworks.add(new JavaScriptFramework("AframeworkXZ"));// for fuzzy search
         frameworks.add(new JavaScriptFramework("BframeworkXZ"));
         for (JavaScriptFramework f : frameworks) {
             mockMvc.perform(post("/add")
@@ -95,7 +100,7 @@ public class JavaScriptFrameworkTests {
         for (int i = 7; i >= 4; i--) veList.add(expectedOrder.get(i)); // reasonable reversed
         for (int i = 0; i < 4; i++) veList.add(expectedOrder.get(i)); // edge cases not reversed
         veList.sort(new ValidationErrorAlphabeticalComparator());
-        veList.forEach(it -> LOG.debug(it != null ? it.toString() : "null"));
+        //veList.forEach(it -> LOG.debug(it != null ? it.toString() : "null"));
         for (int i = 0; i < 8; i++) assert (veList.get(i) == expectedOrder.get(i));
     }
 
@@ -161,19 +166,17 @@ public class JavaScriptFrameworkTests {
     //getFrameworkById
     @Test
     public void D_getFrameworkByIdTest() throws Exception {
-        MvcResult result = mockMvc.perform(get("/framework/1")
+        mockMvc.perform(get("/framework/1")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(1)))
-                .andExpect(jsonPath("$.name", is("ReactJS")))
-                .andReturn();
-        LOG.debug("MvcResult -- C_getFrameworkByIdTest(): " + result.getResponse().getContentAsString());
+                .andExpect(jsonPath("$.name", is("ReactJS")));
     }
 
     @Test
     public void E_getFrameworkByNonExistingIdTest() throws Exception {
         mockMvc.perform(get("/framework/1000").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(404));
+                .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
         // custom vyjimka zachycena handlerem v EtnRestController
         // loguje do spring.log
 
@@ -214,7 +217,7 @@ public class JavaScriptFrameworkTests {
         JavaScriptFramework updated = new JavaScriptFramework("nonExistingId");
         mockMvc.perform(put("/update/999").contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsBytes(updated)))
-                .andExpect(status().is(404));
+                .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
         // custom vyjimka zachycena handlerem v EtnRestController
         // loguje do spring.log
 
@@ -229,15 +232,31 @@ public class JavaScriptFrameworkTests {
         mockMvc.perform(delete("/delete/1"))
                 .andExpect(status().isOk());
         mockMvc.perform(delete("/delete/1"))
-                .andExpect(status().is(404));
+                .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
     }
 
     @Test
     public void J_hibernateSearchTest() throws Exception{
-        MvcResult result = mockMvc.perform(get("search/frameworkXY"))
+        String searchFor = "frameworkXY";
+        MvcResult result = mockMvc.perform(get("/search/name/" + searchFor))
                 .andExpect(status().isOk())
                 .andReturn();
-        LOG.info("result: " + result.getResponse().getContentAsString());
+        String responseAsString = result.getResponse().getContentAsString();
+        List<JavaScriptFramework> frameworks = mapper
+                .readValue(responseAsString, new TypeReference<List<JavaScriptFramework>>(){});
+        assertEquals(3, frameworks.size());
+        frameworks.forEach(searchResultFramework ->
+                assertEquals(searchFor, searchResultFramework.getName()));
+    }
+
+    @Test
+    public void K_hibernateSearchTestForNonExistingName() throws Exception{
+        String searchFor = "frameworkNotYetInvented";
+        mockMvc.perform(get("/search/name/" + searchFor))
+                .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
+        // nebo vracet 204 a ocekavat prazdny list?
+        // https://benramsey.com/blog/2008/05/http-status-204-no-content-and-205-reset-content/
+        // https://stackoverflow.com/questions/11746894/what-is-the-proper-rest-response-code-for-a-valid-request-but-an-empty-data
     }
 
     @AfterClass
