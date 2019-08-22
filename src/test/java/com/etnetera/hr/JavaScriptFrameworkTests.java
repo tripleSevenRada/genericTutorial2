@@ -266,5 +266,4 @@ public class JavaScriptFrameworkTests {
         LOG.warn("Test WARN from JavaScriptFrameworkTests");
         LOG.error("Test ERROR from JavaScriptFrameworkTests");
     }
-
 }

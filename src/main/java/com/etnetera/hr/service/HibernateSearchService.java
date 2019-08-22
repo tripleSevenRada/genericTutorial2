@@ -19,7 +19,8 @@ import java.util.List;
 @Service
 public class HibernateSearchService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HibernateSearchService.class);
+    private static final Logger LOG = LoggerFactory
+            .getLogger(HibernateSearchService.class);
 
     @Autowired
     private final EntityManager entityManager;
@@ -31,18 +32,18 @@ public class HibernateSearchService {
 
     void initializeHibernateSearch() {
         try {
-            FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
+            FullTextEntityManager fullTextEntityManager =
+                    Search.getFullTextEntityManager(entityManager);
             fullTextEntityManager.createIndexer().startAndWait();
         } catch (InterruptedException e) {
-            e.printStackTrace();
-            // TODO
+            Thread.currentThread().interrupt();  // set interrupt flag
+            LOG.error(e.getMessage());
         }
     }
 
     @Transactional
     public List<JavaScriptFramework> search(String searchFor,
-                                            String onField) throws NoResultException{
-
+                                            String onField) throws NoResultException {
         FullTextEntityManager fullTextEntityManager =
                 Search.getFullTextEntityManager(entityManager);
 
@@ -63,4 +64,5 @@ public class HibernateSearchService {
 
         return jpaQuery.getResultList();
     }
+    // TODO fuzzy search etc.
 }

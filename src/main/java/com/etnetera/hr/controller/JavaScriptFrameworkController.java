@@ -85,7 +85,7 @@ public class JavaScriptFrameworkController extends EtnRestController {
         return searchResults;
     }
 
-    //TODO fuzzy search e.t.c
+    //TODO fuzzy search, "more like this" queries etc...
 
     @GetMapping("/testLogLevel")
     public String testLogLevel() {
