@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.SortNatural;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -17,8 +18,8 @@ import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "details")
-public class JavaScriptFrameworkVersion {
+@Table(name = "versions")
+public class JavaScriptFrameworkVersion implements Comparable<JavaScriptFrameworkVersion> {
 
     static final int VERSION_MAJOR_DEFAULT = 0;
     static final int HYPE_LEVEL_DEFAULT = 0;
@@ -41,7 +42,8 @@ public class JavaScriptFrameworkVersion {
     @JsonIgnore
     private JavaScriptFramework framework;
 
-    public JavaScriptFrameworkVersion(){}
+    public JavaScriptFrameworkVersion() {
+    }
 
     public JavaScriptFrameworkVersion(
             int versionMajor,
@@ -59,8 +61,8 @@ public class JavaScriptFrameworkVersion {
             @Valid
             @Min(1)
             @Max(12)
-            int deprecationDateMonth
-            ) {
+                    int deprecationDateMonth
+    ) {
         this.versionMajor = versionMajor;
         this.hypeLevel = hypeLevel;
         this.deprecationDate = LocalDate.of(deprecationDateYear, deprecationDateMonth, 1);
@@ -96,5 +98,10 @@ public class JavaScriptFrameworkVersion {
 
     public void setFramework(JavaScriptFramework framework) {
         this.framework = framework;
+    }
+
+    @Override
+    public int compareTo(JavaScriptFrameworkVersion javaScriptFrameworkVersion) {
+        return Integer.compare(this.versionMajor, javaScriptFrameworkVersion.versionMajor);
     }
 }

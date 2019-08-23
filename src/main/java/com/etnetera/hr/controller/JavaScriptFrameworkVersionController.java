@@ -16,22 +16,34 @@ import java.util.List;
 public class JavaScriptFrameworkVersionController extends EtnRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(JavaScriptFrameworkController.class);
-    @Autowired
-    private JavaScriptFrameworkVersionRepository versionRepository;
-    @Autowired
+
     private JavaScriptFrameworkRepository frameworkRepository;
+    private JavaScriptFrameworkVersionRepository versionRepository;
+
+    @Autowired
+    public JavaScriptFrameworkVersionController(
+            JavaScriptFrameworkRepository frameworkRepository,
+            JavaScriptFrameworkVersionRepository versionRepository
+    ) {
+        this.frameworkRepository = frameworkRepository;
+        this.versionRepository = versionRepository;
+    }
+
 
     @PostMapping("/frameworks/{frameworkId}/versions")
     public JavaScriptFrameworkVersion createVersion(@PathVariable(value = "frameworkId") Long frameworkId,
                                                     @Valid @RequestBody JavaScriptFrameworkVersion version) {
-        return frameworkRepository.findById(frameworkId).map(framework -> {
-            version.setFramework(framework);
-            return versionRepository.save(version);
-        }).orElseThrow(() -> new ResourceNotFoundException("JavaScriptFramework", "id", frameworkId));
+        return frameworkRepository.findById(frameworkId).map(
+                framework -> {
+                    version.setFramework(framework);
+                    return versionRepository.save(version);
+                }).orElseThrow(() ->
+                new ResourceNotFoundException("JavaScriptFramework", "id", frameworkId));
     }
+
     @GetMapping("/frameworks/{frameworkId}/versions")
     public Iterable<JavaScriptFrameworkVersion> getAllVersionsByFrameworkId
-            (@PathVariable (value = "frameworkId") Long frameworkId) {
+            (@PathVariable(value = "frameworkId") Long frameworkId) {
         return versionRepository.findByFrameworkId(frameworkId);
     }
 

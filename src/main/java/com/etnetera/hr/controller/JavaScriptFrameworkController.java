@@ -24,14 +24,18 @@ import java.util.List;
 public class JavaScriptFrameworkController extends EtnRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(JavaScriptFrameworkController.class);
-    private final JavaScriptFrameworkRepository repository;
 
-    @Autowired
+    private final JavaScriptFrameworkRepository repository;
     private HibernateSearchService searchService;
 
     @Autowired
-    public JavaScriptFrameworkController(JavaScriptFrameworkRepository repository) {
+    public JavaScriptFrameworkController(
+            JavaScriptFrameworkRepository repository,
+            HibernateSearchService searchService
+
+    ) {
         this.repository = repository;
+        this.searchService = searchService;
     }
 
     @GetMapping("/frameworks")
