@@ -3,11 +3,7 @@ package com.etnetera.hr.data;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -19,6 +15,7 @@ import javax.validation.constraints.Size;
  */
 @Indexed
 @Entity
+@Table(name = "frameworks")
 public class JavaScriptFramework {
 
 	@Id

@@ -53,8 +53,8 @@ public class JavaScriptFrameworkTests {
     private static final Logger LOG = LoggerFactory.getLogger(JavaScriptFrameworkTests.class);
     private ObjectMapper mapper = new ObjectMapper();
 
-    @Autowired
-    private JavaScriptFrameworkRepository repository;
+    //@Autowired
+    //private JavaScriptFrameworkRepository repository;
 
     private List<JavaScriptFramework> frameworks;
 
@@ -204,7 +204,8 @@ public class JavaScriptFrameworkTests {
     @Test
     public void G_updateFrameworkInvalid() throws Exception {
         JavaScriptFramework updated = new JavaScriptFramework(" ");// blank name
-        mockMvc.perform(put("/update/1").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/update/1")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsBytes(updated)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", hasSize(1)))
@@ -215,7 +216,8 @@ public class JavaScriptFrameworkTests {
     @Test
     public void H_updateFrameworkByNonExistingIdTest() throws Exception {
         JavaScriptFramework updated = new JavaScriptFramework("nonExistingId");
-        mockMvc.perform(put("/update/999").contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(put("/update/999")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsBytes(updated)))
                 .andExpect(status().is(HttpStatus.NOT_FOUND.value()));
         // custom vyjimka zachycena handlerem v EtnRestController
