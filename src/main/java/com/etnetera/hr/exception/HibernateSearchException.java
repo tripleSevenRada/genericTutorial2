@@ -1,6 +1,5 @@
 package com.etnetera.hr.exception;
 
-
 //@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
 //pouzil jsem @ExceptionHandler
 public class HibernateSearchException extends RuntimeException {

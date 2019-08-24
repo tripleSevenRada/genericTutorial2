@@ -64,7 +64,7 @@ public class JavaScriptFrameworkController extends EtnRestController {
     }
 
     @DeleteMapping("delete/{id}")
-    public ResponseEntity deleteFramework(@PathVariable(value = "id") Long frameworkId) {
+    public ResponseEntity<?> deleteFramework(@PathVariable(value = "id") Long frameworkId) {
         JavaScriptFramework toBeDeleted = repository.findById(frameworkId)
                 .orElseThrow(() -> new ResourceNotFoundException("JavaScriptFramework", "id", frameworkId));
         repository.delete(toBeDeleted);
@@ -100,5 +100,4 @@ public class JavaScriptFrameworkController extends EtnRestController {
         LOG.error("This is an ERROR log");
         return "Added some log output to console...";
     }
-
 }

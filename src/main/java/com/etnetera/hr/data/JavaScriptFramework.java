@@ -56,5 +56,4 @@ public class JavaScriptFramework {
 	public String toString() {
 		return "JavaScriptFramework [id=" + id + ", name=" + name + "]";
 	}
-
 }

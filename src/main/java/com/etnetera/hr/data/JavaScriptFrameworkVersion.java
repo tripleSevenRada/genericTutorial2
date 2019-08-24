@@ -61,7 +61,7 @@ public class JavaScriptFrameworkVersion implements Comparable<JavaScriptFramewor
             @Valid
             @Min(1)
             @Max(12)
-                    int deprecationDateMonth
+            int deprecationDateMonth
     ) {
         this.versionMajor = versionMajor;
         this.hypeLevel = hypeLevel;

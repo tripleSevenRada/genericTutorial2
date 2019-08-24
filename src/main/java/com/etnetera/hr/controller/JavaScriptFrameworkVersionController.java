@@ -7,6 +7,7 @@ import com.etnetera.hr.repository.JavaScriptFrameworkVersionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -29,7 +30,6 @@ public class JavaScriptFrameworkVersionController extends EtnRestController {
         this.versionRepository = versionRepository;
     }
 
-
     @PostMapping("/frameworks/{frameworkId}/versions")
     public JavaScriptFrameworkVersion createVersion(@PathVariable(value = "frameworkId") Long frameworkId,
                                                     @Valid @RequestBody JavaScriptFrameworkVersion version) {
@@ -44,7 +44,15 @@ public class JavaScriptFrameworkVersionController extends EtnRestController {
     @GetMapping("/frameworks/{frameworkId}/versions")
     public Iterable<JavaScriptFrameworkVersion> getAllVersionsByFrameworkId
             (@PathVariable(value = "frameworkId") Long frameworkId) {
-        return versionRepository.findByFrameworkId(frameworkId);
+        return versionRepository.findAllByFrameworkId(frameworkId);
     }
 
+    @DeleteMapping("/frameworks/{frameworkId}/versions/{versionId}")
+    public ResponseEntity<?> deleteVersion(@PathVariable (value = "frameworkId") Long frameworkId,
+                                           @PathVariable (value = "versionId") Long versionId) {
+        return versionRepository.findByIdAndFrameworkId(frameworkId, versionId).map(version -> {
+            versionRepository.delete(version);
+            return ResponseEntity.ok().build();
+        }).orElseThrow(() -> new ResourceNotFoundException("JavaScriptFrameworkVersion" , "id", versionId));
+    }
 }

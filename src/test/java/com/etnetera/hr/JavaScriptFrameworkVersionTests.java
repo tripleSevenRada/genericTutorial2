@@ -1,6 +1,5 @@
 package com.etnetera.hr;
 
-import com.etnetera.hr.data.JavaScriptFramework;
 import com.etnetera.hr.data.JavaScriptFrameworkVersion;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
