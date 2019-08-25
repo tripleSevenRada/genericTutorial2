@@ -72,16 +72,8 @@ public class JavaScriptFrameworkVersionTests {
 
     @Test
     public void B_createVersionInvalidTest() throws Exception{
-        List<Integer> versionsMajor = new ArrayList(){
-            {
-                add(-1); add(1); add(1);
-            }
-        };
-        List<Integer> hypeLevels = new ArrayList(){
-            {
-                add(1); add(-1); add(1);
-            }
-        };
+        List<Integer> versionsMajor = new ArrayList(){{add(-1); add(1); add(1);}};
+        List<Integer> hypeLevels = new ArrayList(){{ add(1); add(-1); add(1);}};
         List<LocalDate> deprecationDates = new ArrayList(){
             {
                 add(LocalDate.of(2030,1,1));
@@ -168,4 +160,5 @@ public class JavaScriptFrameworkVersionTests {
             assertEquals(i, versions.get(i).getVersionMajor());
         }
     }
+    //TODO test delete
 }
