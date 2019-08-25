@@ -33,7 +33,7 @@ public abstract class EtnRestController {
                 .getFieldErrors()
                 .stream()
                 .map(e -> {
-                    return new ValidationError(e.getField(), e.getCode());
+                    return new ValidationError(e.getField(), e.getDefaultMessage());
                 })
                 .sorted(new ValidationErrorAlphabeticalComparator())
                 .collect(Collectors.toList());

@@ -1,7 +1,6 @@
 package com.etnetera.hr;
 
 import com.etnetera.hr.data.JavaScriptFramework;
-import com.etnetera.hr.repository.JavaScriptFrameworkRepository;
 import com.etnetera.hr.rest.ValidationError;
 import com.etnetera.hr.rest.ValidationErrorAlphabeticalComparator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -139,7 +138,7 @@ public class JavaScriptFrameworkTests {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.errors", hasSize(1)))
                     .andExpect(jsonPath("$.errors[0].field", is("name")))
-                    .andExpect(jsonPath("$.errors[0].message", is("NotBlank"))); // ne NotEmpty
+                    .andExpect(jsonPath("$.errors[0].message", is("Should be not blank"))); // ne NotEmpty
         }
 
         framework.setName("                                  ");// > 30
@@ -149,9 +148,9 @@ public class JavaScriptFrameworkTests {
                 .andExpect(jsonPath("$.errors", hasSize(2)))
                 // ValidationErrorAlphabeticalComparator pro stejne poradi u errors tuples.
                 .andExpect(jsonPath("$.errors[0].field", is("name")))
-                .andExpect(jsonPath("$.errors[0].message", is("NotBlank")))
+                .andExpect(jsonPath("$.errors[0].message", is("Should be not blank")))
                 .andExpect(jsonPath("$.errors[1].field", is("name")))
-                .andExpect(jsonPath("$.errors[1].message", is("Size")))
+                .andExpect(jsonPath("$.errors[1].message", is("Watch your size")))
                 .andReturn();
 
         framework.setName("ThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirtyThirty");
@@ -160,7 +159,7 @@ public class JavaScriptFrameworkTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", hasSize(1)))
                 .andExpect(jsonPath("$.errors[0].field", is("name")))
-                .andExpect(jsonPath("$.errors[0].message", is("Size")));
+                .andExpect(jsonPath("$.errors[0].message", is("Watch your size")));
     }
 
     //getFrameworkById
@@ -210,7 +209,7 @@ public class JavaScriptFrameworkTests {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors", hasSize(1)))
                 .andExpect(jsonPath("$.errors[0].field", is("name")))
-                .andExpect(jsonPath("$.errors[0].message", is("NotBlank")));
+                .andExpect(jsonPath("$.errors[0].message", is("Should be not blank")));
     }
 
     @Test
@@ -247,8 +246,10 @@ public class JavaScriptFrameworkTests {
         List<JavaScriptFramework> frameworks = mapper
                 .readValue(responseAsString, new TypeReference<List<JavaScriptFramework>>(){});
         assertEquals(3, frameworks.size());
+        LOG.info(responseAsString);
         frameworks.forEach(searchResultFramework ->
                 assertEquals(searchFor, searchResultFramework.getName()));
+
     }
 
     @Test

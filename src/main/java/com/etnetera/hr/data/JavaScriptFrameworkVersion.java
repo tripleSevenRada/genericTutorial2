@@ -15,6 +15,7 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.PositiveOrZero;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 
 @Entity
@@ -44,7 +45,18 @@ public class JavaScriptFrameworkVersion implements Comparable<JavaScriptFramewor
 
     public JavaScriptFrameworkVersion() {
     }
-
+    // c1
+    public JavaScriptFrameworkVersion (
+            int versionMajor,
+            int hypeLevel,
+            int deprecationDateYear,
+            int deprecationDateMonth
+    ) throws DateTimeException {
+        this.versionMajor = versionMajor;
+        this.hypeLevel = hypeLevel;
+        this.deprecationDate = LocalDate.of(deprecationDateYear, deprecationDateMonth, 1);
+    }
+    // c2
     public JavaScriptFrameworkVersion(
             int versionMajor,
             int hypeLevel,
@@ -52,20 +64,6 @@ public class JavaScriptFrameworkVersion implements Comparable<JavaScriptFramewor
         this.versionMajor = versionMajor;
         this.deprecationDate = deprecationDate;
         this.hypeLevel = hypeLevel;
-    }
-
-    public JavaScriptFrameworkVersion(
-            int versionMajor,
-            int hypeLevel,
-            int deprecationDateYear, // TODO validation here, no constant used
-            @Valid
-            @Min(1)
-            @Max(12)
-            int deprecationDateMonth
-    ) {
-        this.versionMajor = versionMajor;
-        this.hypeLevel = hypeLevel;
-        this.deprecationDate = LocalDate.of(deprecationDateYear, deprecationDateMonth, 1);
     }
 
     public int getVersionMajor() {

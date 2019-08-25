@@ -24,8 +24,8 @@ public class JavaScriptFramework {
 
 	private static final int JAVASCRIPT_FRAMEWORK_NAME_MAX_LENGTH = 30;
 	@Column(nullable = false, length = JAVASCRIPT_FRAMEWORK_NAME_MAX_LENGTH, name = "name")
-	@NotBlank(message = "NotBlank")
-	@Size(max = JAVASCRIPT_FRAMEWORK_NAME_MAX_LENGTH, message = "Size")
+	@NotBlank(message = "Should be not blank")
+	@Size(max = JAVASCRIPT_FRAMEWORK_NAME_MAX_LENGTH, message = "Watch your size") // chci odlisit v testech "code" a "message"
 	@Field //hibernate search field
 	private String name;
 
